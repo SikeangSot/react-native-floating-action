@@ -1,23 +1,33 @@
+/* eslint-disable react-native/no-color-literals */
+/* eslint-disable react/jsx-props-no-spreading */
+/* eslint-disable react-native/no-inline-styles */
+/* eslint-disable @typescript-eslint/no-use-before-define */
+/* eslint-disable react/forbid-prop-types */
+/* eslint-disable react/require-default-props */
+/* eslint-disable react-native/no-unused-styles */
 import React, { Component } from "react"; // eslint-disable-line
-import PropTypes from "prop-types";
+import PropTypes from "prop-types"
 import {
   StyleSheet,
   Image,
   Animated,
   Dimensions,
-  TouchableOpacity,
   LayoutAnimation,
   Platform,
-  Keyboard
-} from "react-native";
+  Keyboard,
+  View,
+  TouchableOpacity as iOSTouchableOpacity
+} from "react-native"
 
-import FloatingActionItem from "./FloatingActionItem";
-import AddIcon from "./AddIcon";
+import { TouchableOpacity as AndroidTouchableOpacity } from 'react-native-gesture-handler'
+import FloatingActionItem from "./FloatingActionItem"
+import AddIcon from "./AddIcon"
 
-import { isIphoneX } from "./utils/platform";
-import { getTouchableComponent, getRippleProps } from "./utils/touchable";
+import { isIphoneX } from "./utils/platform"
+import { getTouchableComponent, getRippleProps } from "./utils/touchable"
 
-const DEVICE_WIDTH = Dimensions.get("window").width;
+const TouchableOpacity = Platform.OS === "android" ? AndroidTouchableOpacity : iOSTouchableOpacity
+const DEVICE_WIDTH = Dimensions.get("window").width
 
 const DEFAULT_SHADOW_PROPS = {
   shadowOpacity: 0.35,
@@ -27,103 +37,103 @@ const DEFAULT_SHADOW_PROPS = {
   },
   shadowColor: "#000000",
   shadowRadius: 3
-};
+}
 
 class FloatingAction extends Component {
   constructor(props) {
-    super(props);
+    super(props)
 
     this.state = {
       active: false
-    };
+    }
 
     this.mainBottomAnimation = new Animated.Value(
       this.distanceToVerticalEdge + props.mainVerticalDistance
-    );
+    )
     this.actionsBottomAnimation = new Animated.Value(
       props.buttonSize +
         this.distanceToVerticalEdge +
         props.actionsPaddingTopBottom +
         props.mainVerticalDistance
-    );
-    this.animation = new Animated.Value(0);
-    this.actionsAnimation = new Animated.Value(0);
-    this.visibleAnimation = new Animated.Value(props.visible ? 0 : 1);
+    )
+    this.animation = new Animated.Value(0)
+    this.actionsAnimation = new Animated.Value(0)
+    this.visibleAnimation = new Animated.Value(props.visible ? 0 : 1)
     /*
      * this animation will fix an error on ReactNative (Android) where
      * interpolations with 0 and 1 don't work as expected.
      */
-    this.fadeAnimation = new Animated.Value(props.visible ? 1 : 0);
+    this.fadeAnimation = new Animated.Value(props.visible ? 1 : 0)
   }
 
   componentDidMount() {
-    const { openOnMount, listenKeyboard } = this.props;
+    const { openOnMount, listenKeyboard } = this.props
 
     if (openOnMount) {
-      this.animateButton();
+      this.animateButton()
     }
 
     if (listenKeyboard) {
       const showEvent =
-        Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+        Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow"
       const hideEvent =
-        Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+        Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide"
       this.keyboardWillShowListener = Keyboard.addListener(
         showEvent,
         this.onKeyboardShow
-      );
+      )
       this.keyboardWillHideListener = Keyboard.addListener(
         hideEvent,
         this.onKeyboardHideHide
-      );
+      )
     }
   }
 
   componentDidUpdate(prevProps) {
-    const { visible } = this.props;
+    const { visible } = this.props
 
     if (prevProps.visible !== visible) {
       if (visible) {
         Animated.parallel([
           Animated.spring(this.visibleAnimation, { toValue: 0, useNativeDriver: false }),
           Animated.spring(this.fadeAnimation, { toValue: 1, useNativeDriver: false })
-        ]).start();
+        ]).start()
       }
       if (!visible) {
         Animated.parallel([
           Animated.spring(this.visibleAnimation, { toValue: 1, useNativeDriver: false }),
           Animated.spring(this.fadeAnimation, { toValue: 0, useNativeDriver: false })
-        ]).start();
+        ]).start()
       }
     }
   }
 
   componentWillUnmount() {
-    const { listenKeyboard } = this.props;
+    const { listenKeyboard } = this.props
 
     if (listenKeyboard) {
-      this.keyboardWillShowListener.remove();
-      this.keyboardWillHideListener.remove();
+      this.keyboardWillShowListener.remove()
+      this.keyboardWillHideListener.remove()
     }
   }
 
   get distanceToHorizontalEdge() {
-    const { distanceToEdge } = this.props;
+    const { distanceToEdge } = this.props
     return typeof distanceToEdge === 'number'
       ? distanceToEdge
-      : distanceToEdge.horizontal;
+      : distanceToEdge.horizontal
   }
 
   get distanceToVerticalEdge() {
-    const { distanceToEdge } = this.props;
+    const { distanceToEdge } = this.props
     return typeof distanceToEdge === 'number'
       ? distanceToEdge
-      : distanceToEdge.vertical;
+      : distanceToEdge.vertical
   }
 
   onKeyboardShow = e => {
-    const { buttonSize, actionsPaddingTopBottom } = this.props;
-    const { height } = e.endCoordinates;
+    const { buttonSize, actionsPaddingTopBottom } = this.props
+    const { height } = e.endCoordinates
 
     Animated.parallel([
       Animated.spring(this.actionsBottomAnimation, {
@@ -143,11 +153,11 @@ class FloatingAction extends Component {
         duration: 250,
         useNativeDriver: false
       })
-    ]).start();
+    ]).start()
   };
 
   onKeyboardHideHide = () => {
-    const { buttonSize, actionsPaddingTopBottom } = this.props;
+    const { buttonSize, actionsPaddingTopBottom } = this.props
 
     Animated.parallel([
       Animated.spring(this.actionsBottomAnimation, {
@@ -162,16 +172,16 @@ class FloatingAction extends Component {
         duration: 250,
         useNativeDriver: false
       })
-    ]).start();
+    ]).start()
   };
 
   getShadow = () => {
-    const { shadow } = this.props;
+    const { shadow } = this.props
 
     return {
       ...DEFAULT_SHADOW_PROPS,
       ...shadow
-    };
+    }
   };
 
   getIcon = () => {
@@ -182,22 +192,22 @@ class FloatingAction extends Component {
       iconWidth,
       iconHeight,
       iconColor
-    } = this.props;
+    } = this.props
 
     if (overrideWithAction) {
-      const { icon } = actions[0];
+      const { icon } = actions[0]
 
       if (React.isValidElement(icon)) {
-        return icon;
+        return icon
       }
       return (
         <Image style={{ width: iconWidth, height: iconHeight }} source={icon} />
-      );
+      )
     }
 
     if (floatingIcon) {
       if (React.isValidElement(floatingIcon)) {
-        return floatingIcon;
+        return floatingIcon
       }
 
       return (
@@ -205,18 +215,18 @@ class FloatingAction extends Component {
           style={{ width: iconWidth, height: iconHeight }}
           source={floatingIcon}
         />
-      );
+      )
     }
 
-    return <AddIcon width={iconWidth} height={iconHeight} backgroundColor={iconColor}  />;
+    return <AddIcon width={iconWidth} height={iconHeight} backgroundColor={iconColor} />
   };
 
   reset = () => {
-    const { animated, onClose } = this.props;
+    const { animated, onClose } = this.props
 
     if (animated) {
-      Animated.spring(this.animation, { toValue: 0, useNativeDriver: false }).start();
-      Animated.spring(this.actionsAnimation, { toValue: 0, useNativeDriver: false }).start();
+      Animated.spring(this.animation, { toValue: 0, useNativeDriver: false }).start()
+      Animated.spring(this.actionsAnimation, { toValue: 0, useNativeDriver: false }).start()
     }
     this.updateState(
       {
@@ -224,10 +234,10 @@ class FloatingAction extends Component {
       },
       () => {
         if (onClose) {
-          onClose();
+          onClose()
         }
       }
-    );
+    )
   };
 
   animateButton = () => {
@@ -239,32 +249,32 @@ class FloatingAction extends Component {
       dismissKeyboardOnPress,
       onPressMain,
       onOpen
-    } = this.props;
-    const { active } = this.state;
+    } = this.props
+    const { active } = this.state
 
     if (dismissKeyboardOnPress) {
-      Keyboard.dismiss();
+      Keyboard.dismiss()
     }
 
     if (overrideWithAction) {
-      this.handlePressItem(actions[0].name);
+      this.handlePressItem(actions[0].name)
 
-      return;
+      return
     }
 
     if (onPressMain) {
-      onPressMain(!active);
+      onPressMain(!active)
     }
 
     if (!active) {
       if (!floatingIcon) {
         if (animated) {
-          Animated.spring(this.animation, { toValue: 1, useNativeDriver: false }).start();
+          Animated.spring(this.animation, { toValue: 1, useNativeDriver: false }).start()
         }
       }
 
       if (animated) {
-        Animated.spring(this.actionsAnimation, { toValue: 1, useNativeDriver: false }).start();
+        Animated.spring(this.actionsAnimation, { toValue: 1, useNativeDriver: false }).start()
 
         // only execute it for the background to prevent extra calls
         LayoutAnimation.configureNext({
@@ -273,7 +283,7 @@ class FloatingAction extends Component {
             type: LayoutAnimation.Types.easeInEaseOut,
             property: LayoutAnimation.Properties.opacity
           }
-        });
+        })
       }
 
       this.updateState(
@@ -282,47 +292,48 @@ class FloatingAction extends Component {
         },
         () => {
           if (onOpen) {
-            onOpen();
+            // console.log('onopen')
+            onOpen()
           }
         }
-      );
+      )
     } else {
-      this.reset();
+      this.reset()
     }
   };
 
   updateState = (nextState, callback) => {
-    const { onStateChange } = this.props;
-    const { active } = this.state;
+    const { onStateChange } = this.props
+    const { active } = this.state
 
     this.setState(nextState, () => {
       if (callback) {
-        callback();
+        callback()
       }
       if (onStateChange) {
         onStateChange({
           isActive: active
-        });
+        })
       }
-    });
+    })
   };
 
   handlePressBackdrop = () => {
-    const { onPressBackdrop } = this.props;
+    const { onPressBackdrop } = this.props
     if (onPressBackdrop) {
-      onPressBackdrop();
+      onPressBackdrop()
     }
-    this.reset();
+    this.reset()
   };
 
   handlePressItem = itemName => {
-    const { onPressItem } = this.props;
+    const { onPressItem } = this.props
 
     if (onPressItem) {
-      onPressItem(itemName);
+      onPressItem(itemName)
     }
 
-    this.reset();
+    this.reset()
   };
 
   renderMainButton() {
@@ -334,19 +345,20 @@ class FloatingAction extends Component {
       position,
       overrideWithAction,
       animated
-    } = this.props;
-    const { active } = this.state;
+    } = this.props
+    const { active } = this.state
 
     if (buttonColor) {
+      // eslint-disable-next-line no-console
       console.warn(
         'FloatingAction: "buttonColor" property was deprecated. Please use "color"'
-      );
+      )
     }
 
-    const mainButtonColor = buttonColor || color;
+    const mainButtonColor = buttonColor || color
 
-    let animatedVisibleView;
-    let animatedViewStyle;
+    let animatedVisibleView
+    let animatedViewStyle
 
     if (animated) {
       animatedVisibleView = {
@@ -365,7 +377,7 @@ class FloatingAction extends Component {
             })
           }
         ]
-      };
+      }
 
       animatedViewStyle = {
         transform: [
@@ -376,13 +388,13 @@ class FloatingAction extends Component {
             })
           }
         ]
-      };
+      }
 
       if (overrideWithAction) {
-        animatedViewStyle = {};
+        animatedViewStyle = {}
       }
     } else if (active) {
-      animatedVisibleView = {};
+      animatedVisibleView = {}
 
       animatedViewStyle = {
         transform: [
@@ -390,9 +402,9 @@ class FloatingAction extends Component {
             rotate: "45deg"
           }
         ]
-      };
+      }
     } else {
-      animatedVisibleView = {};
+      animatedVisibleView = {}
 
       animatedViewStyle = {
         transform: [
@@ -400,24 +412,24 @@ class FloatingAction extends Component {
             rotate: "0deg"
           }
         ]
-      };
+      }
     }
 
-    const Touchable = getTouchableComponent();
+    const Touchable = getTouchableComponent()
     const propStyles = {
       backgroundColor: mainButtonColor,
       bottom: this.mainBottomAnimation // I need to imporove this to run on native thread and not on JS thread
-    };
+    }
 
     if (["left", "right"].indexOf(position) > -1) {
-      propStyles[position] = this.distanceToHorizontalEdge;
+      propStyles[position] = this.distanceToHorizontalEdge
     }
 
     const sizeStyle = {
       width: buttonSize,
       height: buttonSize,
       borderRadius: buttonSize / 2
-    };
+    }
 
     return (
       <Animated.View
@@ -445,7 +457,7 @@ class FloatingAction extends Component {
           </Animated.View>
         </Touchable>
       </Animated.View>
-    );
+    )
   }
 
   renderActions() {
@@ -456,18 +468,18 @@ class FloatingAction extends Component {
       distanceToEdge,
       actionsPaddingTopBottom,
       animated
-    } = this.props;
-    const { active } = this.state;
+    } = this.props
+    const { active } = this.state
 
     if (!actions || actions.length === 0) {
-      return undefined;
+      return undefined
     }
 
     if (overrideWithAction) {
-      return null;
+      return null
     }
 
-    let animatedActionsStyle;
+    let animatedActionsStyle
 
     if (animated) {
       animatedActionsStyle = {
@@ -475,9 +487,9 @@ class FloatingAction extends Component {
           inputRange: [0, 1],
           outputRange: [0, 1]
         })
-      };
+      }
     } else {
-      animatedActionsStyle = { opacity: active ? 1 : 0 };
+      animatedActionsStyle = { opacity: active ? 1 : 0 }
     }
 
     const actionsStyles = [
@@ -487,19 +499,19 @@ class FloatingAction extends Component {
       {
         bottom: this.actionsBottomAnimation
       }
-    ];
+    ]
 
     if (active) {
-      actionsStyles.push(styles[`${position}ActionsVisible`]);
+      actionsStyles.push(styles[`${position}ActionsVisible`])
     }
 
-    const sortedActions = actions.sort((a, b) => a.position - b.position);
+    const sortedActions = actions.sort((a, b) => a.position - b.position)
     return (
       <Animated.View style={actionsStyles} pointerEvents="box-none">
         {sortedActions.map(action => {
-          const textColor = action.textColor || action.actionsTextColor;
+          const textColor = action.textColor || action.actionsTextColor
           const textBackground =
-            action.textBackground || action.actionsTextBackground;
+            action.textBackground || action.actionsTextBackground
 
           return (
             <FloatingActionItem
@@ -515,28 +527,30 @@ class FloatingAction extends Component {
               onPress={this.handlePressItem}
               animated={animated}
             />
-          );
+          )
         })}
       </Animated.View>
-    );
+    )
   }
 
   renderTappableBackground() {
-    const { overlayColor } = this.props;
+    const { overlayColor } = this.props
 
     // TouchableOpacity don't require a child
     return (
-      <TouchableOpacity
-        activeOpacity={1}
-        style={[styles.overlay, { backgroundColor: overlayColor }]}
-        onPress={this.handlePressBackdrop}
-      />
-    );
+      <View style={[styles.overlay, { backgroundColor: overlayColor }]}>
+        <TouchableOpacity
+          activeOpacity={1}
+          style={{ width: '100%', height: '100%' }}
+          onPress={this.handlePressBackdrop}
+        />
+      </View>
+    )
   }
 
   render() {
-    const { active } = this.state;
-    const { showBackground } = this.props;
+    const { active } = this.state
+    const { showBackground } = this.props
 
     return (
       <Animated.View
@@ -547,7 +561,7 @@ class FloatingAction extends Component {
         {this.renderActions()}
         {this.renderMainButton()}
       </Animated.View>
-    );
+    )
   }
 }
 
@@ -603,7 +617,7 @@ FloatingAction.propTypes = {
   onOpen: PropTypes.func,
   onPressBackdrop: PropTypes.func,
   onStateChange: PropTypes.func
-};
+}
 
 FloatingAction.defaultProps = {
   dismissKeyboardOnPress: false,
@@ -624,7 +638,7 @@ FloatingAction.defaultProps = {
   mainVerticalDistance: 0,
   animated: true,
   shadow: {}
-};
+}
 
 const styles = StyleSheet.create({
   actions: {
@@ -684,6 +698,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center"
   }
-});
+})
 
-export default FloatingAction;
+export default FloatingAction
