@@ -1,7 +1,8 @@
 import {
   Platform,
   TouchableOpacity,
-  TouchableNativeFeedback
+  TouchableNativeFeedback,
+  Button
 } from "react-native";
 
 import { shadeColor } from "./color";
@@ -10,7 +11,7 @@ export function getTouchableComponent(useNativeFeedback = true) {
   if (useNativeFeedback === true && Platform.OS === "android") {
     return TouchableNativeFeedback;
   }
-  return TouchableOpacity;
+  return Button;
 }
 
 export function getRippleProps(color, useNativeFeedback = true) {
